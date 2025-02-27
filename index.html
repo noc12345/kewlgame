@@ -21,7 +21,7 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        let player = { x: 0, y: 10, z: 0 }; // Player's position
+        let player = { x: 0, y: 10, z: -30 }; // Player's position
         const nearClip = 0.1; // Near clipping plane
         const speed = 1; // Movement speed factor
 
@@ -45,7 +45,7 @@
             let relativeZ = point.z - player.z;
             if (relativeZ < nearClip) relativeZ = nearClip;
 
-            let scale = 2400 / (relativeZ + 100);
+            let scale = 2500 / (relativeZ + 100);
             return {
                 x: canvas.width / 2 + (point.x - player.x) * scale,
                 y: canvas.height / 2 - (point.y - player.y) * scale
@@ -93,12 +93,14 @@
                 ctx.stroke();
             }
 
-            // Draw a small circle in the middle of the screen
+            // Project the player's position to 2D and draw the circle
+            const playerPos = project(player);
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2 + 200, 10, 0, Math.PI * 2);
+            ctx.arc(playerPos.x, playerPos.y + 0, 10, 0, Math.PI * 2); // Moving it slightly down
+            ctx.fillStyle = "red";
             ctx.fill();
             ctx.strokeStyle = "black";
-            ctx.lineWidth = 0.5;
+            ctx.lineWidth = 2;
             ctx.stroke();
         }
 
