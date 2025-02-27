@@ -27,9 +27,9 @@
 
         const platform = [
             { x: -20, y: 0, z: -20 },
-            { x: 20, y: 0, z: -20 },
-            { x: 20, y: 0, z: 20 },
-            { x: -20, y: 0, z: 20 }
+            { x: 35, y: 0, z: -40 },
+            { x: 20, y: 0, z: 30 },
+            { x: -40, y: 0, z: 40 }
         ];
 
         // Keep track of pressed keys
@@ -45,7 +45,7 @@
             let relativeZ = point.z - player.z;
             if (relativeZ < nearClip) relativeZ = nearClip;
 
-            let scale = 2600 / (relativeZ + 100);
+            let scale = 2600 / (relativeZ + 90);
             return {
                 x: canvas.width / 2 + (point.x - player.x) * scale,
                 y: canvas.height / 2 - (point.y - player.y) * scale
@@ -95,8 +95,8 @@
 
         // Update the player's position based on key presses
         function updatePosition() {
-            if (keys.ArrowUp) player.z += speed;
-            if (keys.ArrowDown) player.z -= speed;
+            if (keys.ArrowUp) player.z += 2 * speed;
+            if (keys.ArrowDown) player.z -= 2 * speed;
             if (keys.ArrowLeft) player.x -= speed;
             if (keys.ArrowRight) player.x += speed;
         }
