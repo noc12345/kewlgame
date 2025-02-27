@@ -1,100 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Movement Example</title>
-  <style>
-    body { text-align: center; font-family: Arial, sans-serif; }
-    canvas { background: lightgray; margin-top: 10px; display: block; margin: auto; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Perspective Platform</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { background: lightgray; margin-top: 10px; display: block; margin: auto; }
+    </style>
 </head>
 <body>
-  <h1>3D Movement with Smooth & Diagonal Movement</h1>
-  <canvas id="canvas"></canvas>
-  <p>Use arrow keys to move</p>
+    <h1>3D Perspective Platform</h1>
+    <canvas id="canvas"></canvas>
+    <p>Use arrow keys to move</p>
 
-  <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
+    <script>
+        const canvas = document.getElementById("canvas");
+        const ctx = canvas.getContext("2d");
 
-    canvas.width = 500;
-    canvas.height = 500;
+        canvas.width = 500;
+        canvas.height = 500;
 
-    let player = { x: 0, y: 10, z: -30 }; // Player's position
-    const nearClip = 0.1;
-    const movementSpeed = 0.5; // Movement speed for smooth movement
-    const diagonalFactor = Math.sqrt(0.5); // To handle diagonal speed normalization
+        let player = { x: 0, y: 5, z: -30 }; // Player's position
+        const nearClip = 0.1; // Near clipping plane
+        const speed = 1; // Movement speed factor
 
-    // Key states to track which keys are pressed
-    const keys = {
-      up: false,
-      down: false,
-      left: false,
-      right: false
-    };
+        const platform = [
+            { x: -20, y: 0, z: -20 },
+            { x: 20, y: 0, z: -20 },
+            { x: 20, y: 0, z: 20 },
+            { x: -20, y: 0, z: 20 }
+        ];
 
-    // Projects a 3D point to 2D canvas coordinates.
-    function project(point) {
-      let relativeZ = point.z - player.z;
-      if (relativeZ < nearClip) relativeZ = nearClip; // Clamp to avoid division errors
+        // Keep track of pressed keys
+        const keys = {
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false
+        };
 
-      let scale = 2600 / (relativeZ + 100);
-      return {
-        x: canvas.width / 2 + (point.x - player.x) * scale,
-        y: canvas.height / 2 - (point.y - player.y) * scale
-      };
-    }
+        // Project a 3D point onto 2D canvas coordinates
+        function project(point) {
+            let relativeZ = point.z - player.z;
+            if (relativeZ < nearClip) relativeZ = nearClip;
 
-    // Update the player's position based on key presses
-    function updatePlayerPosition() {
-      let moveX = 0;
-      let moveZ = 0;
+            let scale = 200 / (relativeZ + 100);
+            return {
+                x: canvas.width / 2 + (point.x - player.x) * scale,
+                y: canvas.height / 2 - (point.y - player.y) * scale
+            };
+        }
 
-      if (keys.up) moveZ -= movementSpeed;
-      if (keys.down) moveZ += movementSpeed;
-      if (keys.left) moveX -= movementSpeed;
-      if (keys.right) moveX += movementSpeed;
+        // Clip a line against the near clipping plane
+        function clipLine(p1, p2) {
+            let z1 = p1.z - player.z;
+            let z2 = p2.z - player.z;
 
-      // Normalize diagonal movement (if moving diagonally, maintain equal speed)
-      if ((keys.up || keys.down) && (keys.left || keys.right)) {
-        moveX *= diagonalFactor;
-        moveZ *= diagonalFactor;
-      }
+            if (z1 >= nearClip && z2 >= nearClip) return [p1, p2];
+            if (z1 < nearClip && z2 < nearClip) return null;
 
-      player.x += moveX;
-      player.z += moveZ;
-    }
+            let t = (nearClip - z1) / (z2 - z1);
+            let clippedPoint = {
+                x: p1.x + t * (p2.x - p1.x),
+                y: p1.y + t * (p2.y - p1.y),
+                z: player.z + nearClip
+            };
 
-    // Draw everything (you can add additional objects if needed)
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas
-      // You can draw the player position here if needed, or any other elements
-    }
+            return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
+        }
 
-    // Update the scene and handle movement
-    function update() {
-      updatePlayerPosition(); // Update player's position smoothly
-      draw();  // Redraw everything
-      requestAnimationFrame(update); // Repeat the update on the next frame
-    }
+        // Draw the platform
+        function drawPlatform() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Listen for key events to track which keys are pressed
-    document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp") keys.up = true;
-      if (e.key === "ArrowDown") keys.down = true;
-      if (e.key === "ArrowLeft") keys.left = true;
-      if (e.key === "ArrowRight") keys.right = true;
-    });
+            for (let i = 0; i < platform.length; i++) {
+                let p1 = platform[i];
+                let p2 = platform[(i + 1) % platform.length];
 
-    document.addEventListener("keyup", (e) => {
-      if (e.key === "ArrowUp") keys.up = false;
-      if (e.key === "ArrowDown") keys.down = false;
-      if (e.key === "ArrowLeft") keys.left = false;
-      if (e.key === "ArrowRight") keys.right = false;
-    });
+                let clipped = clipLine(p1, p2);
+                if (!clipped) continue;
 
-    update(); // Start the game loop
-  </script>
+                let proj1 = project(clipped[0]);
+                let proj2 = project(clipped[1]);
+
+                ctx.beginPath();
+                ctx.moveTo(proj1.x, proj1.y);
+                ctx.lineTo(proj2.x, proj2.y);
+                ctx.strokeStyle = "black";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        // Update the player's position based on key presses
+        function updatePosition() {
+            if (keys.ArrowUp) player.z += speed;
+            if (keys.ArrowDown) player.z -= speed;
+            if (keys.ArrowLeft) player.x -= speed;
+            if (keys.ArrowRight) player.x += speed;
+        }
+
+        // Main update loop
+        function update() {
+            updatePosition();
+            drawPlatform();
+            requestAnimationFrame(update);
+        }
+
+        // Track key events
+        document.addEventListener("keydown", (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = true;
+            }
+        });
+
+        document.addEventListener("keyup", (e) => {
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = false;
+            }
+        });
+
+        update(); // Start the update loop
+    </script>
 </body>
 </html>
