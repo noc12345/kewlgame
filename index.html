@@ -33,8 +33,9 @@
 
         function project(point) {
             let relativeZ = point.z - player.z;
-            if (relativeZ < nearClip) relativeZ = nearClip; // Prevent division errors
-
+            if (relativeZ <= 0) return null; // Skip points behind camera
+            
+            // Perspective scaling
             let scale = 200 / (relativeZ + 100);
             return {
                 x: canvas.width / 2 + (point.x - player.x) * scale,
@@ -46,10 +47,13 @@
             let z1 = p1.z - player.z;
             let z2 = p2.z - player.z;
 
-            if (z1 >= nearClip && z2 >= nearClip) return [p1, p2]; // Both visible
-            if (z1 < nearClip && z2 < nearClip) return null; // Both behind, ignore
+            // Skip lines that are both behind the camera
+            if (z1 < nearClip && z2 < nearClip) return null;
 
-            let t = (nearClip - z1) / (z2 - z1);
+            // If one point is behind, clip the line to the near plane
+            if (z1 >= nearClip && z2 >= nearClip) return [p1, p2];
+
+            let t = (nearClip - z1) / (z2 - z1); // Calculate where it intersects the near clip plane
             let clippedPoint = {
                 x: p1.x + t * (p2.x - p1.x),
                 y: p1.y + t * (p2.y - p1.y),
@@ -72,12 +76,14 @@
                 let proj1 = project(clipped[0]);
                 let proj2 = project(clipped[1]);
 
-                ctx.beginPath();
-                ctx.moveTo(proj1.x, proj1.y);
-                ctx.lineTo(proj2.x, proj2.y);
-                ctx.strokeStyle = "black";
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                if (proj1 && proj2) { // Ensure the points are in the visible area
+                    ctx.beginPath();
+                    ctx.moveTo(proj1.x, proj1.y);
+                    ctx.lineTo(proj2.x, proj2.y);
+                    ctx.strokeStyle = "black";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             }
         }
 
