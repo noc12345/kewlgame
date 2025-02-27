@@ -95,7 +95,7 @@
 
             // Draw a small circle in the middle of the screen
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2 + 50, 10, 0, Math.PI * 2);
+            ctx.arc(canvas.width / 2, canvas.height / 2 + 250, 10, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = "black";
             ctx.lineWidth = 2;
@@ -106,8 +106,8 @@
         function updatePosition() {
             if (keys.ArrowUp) player.z += speed;
             if (keys.ArrowDown) player.z -= speed;
-            if (keys.ArrowLeft) player.x -= 2/speed;
-            if (keys.ArrowRight) player.x += 2/speed;
+            if (keys.ArrowLeft) player.x -= speed/3;
+            if (keys.ArrowRight) player.x += speed/3;
         }
 
         // Main update loop
