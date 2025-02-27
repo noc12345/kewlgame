@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Coordinates</title>
+    <style>
+        body { text-align: center; font-family: Arial, sans-serif; }
+        #output { margin-top: 20px; font-size: 20px; }
+    </style>
+</head>
+<body>
+    <h1>3D Coordinate System</h1>
+    <button onclick="move(1, 0, 0)">Move +X</button>
+    <button onclick="move(-1, 0, 0)">Move -X</button>
+    <button onclick="move(0, 1, 0)">Move +Y</button>
+    <button onclick="move(0, -1, 0)">Move -Y</button>
+    <button onclick="move(0, 0, 1)">Move +Z</button>
+    <button onclick="move(0, 0, -1)">Move -Z</button>
+    <div id="output"></div>
+
+    <script>
+        let position = { x: 0, y: 0, z: 0 };
+
+        function move(dx, dy, dz) {
+            position.x += dx;
+            position.y += dy;
+            position.z += dz;
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById("output").innerText = `Position: (${position.x}, ${position.y}, ${position.z})`;
+        }
+
+        updateDisplay();
+    </script>
+</body>
+</html>
