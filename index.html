@@ -96,7 +96,7 @@
             // Project the player's position to 2D and draw the circle
             const playerPos = project(player);
             ctx.beginPath();
-            ctx.arc(playerPos.x, playerPos.y + 0, 10, 0, Math.PI * 2); // Moving it slightly down
+            ctx.arc(playerPos.x, playerPos.y, Math.PI * 2); // Moving it slightly down
             ctx.fillStyle = "red";
             ctx.fill();
             ctx.strokeStyle = "black";
