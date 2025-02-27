@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Perspective Platform</title>
+    <title>3D Perspective Platform with Clipping</title>
     <style>
         body { text-align: center; font-family: Arial, sans-serif; }
-        canvas { background: lightgray; margin-top: 10px; display: block; margin: auto; }
+        canvas { background: lightgray; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <h1>3D Perspective Platform</h1>
+    <h1>3D Perspective Platform with Clipping</h1>
     <canvas id="canvas"></canvas>
     <p>Use arrow keys to move</p>
 
@@ -21,104 +21,62 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        // Player and camera are at the same position
-        let player = { x: 0, y: 10, z: 0 };
-        const nearClip = 1; // Clipping plane distance
-        const clippingThreshold = -20; // Distance (in studs) after which clipping starts
+        let player = { x: 0, y: 5, z: -30 }; // Player's position
 
         const platform = [
-            { x: -30, y: 0, z: -30 },
-            { x: 30, y: 0, z: -30 },
-            { x: 30, y: 0, z: 30 },
-            { x: -30, y: 0, z: 30 }
+            { x: -20, y: 0, z: -20 },
+            { x: 20, y: 0, z: -20 },
+            { x: 20, y: 0, z: 20 },
+            { x: -20, y: 0, z: 20 }
         ];
 
-        // Calculate the distance from the player to a point
-        function distance(p1, p2) {
-            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
-        }
-
-        // Perspective projection function
+        // Project a point with perspective
         function project(point) {
-            let relativeZ = point.z - player.z;
-            if (relativeZ <= 0) return null; // Skip points behind the camera
-            
-            // Perspective scaling
-            let scale = 200 / (relativeZ + 100);
+            let scale = 200 / (point.z - player.z + 100);
             return {
                 x: canvas.width / 2 + (point.x - player.x) * scale,
-                y: canvas.height / 2 - (point.y - player.y) * scale
+                y: canvas.height / 2 - (point.y - player.y) * scale,
+                z: point.z
             };
         }
 
-        // Line clipping function with delayed start
-        function clipLine(p1, p2) {
-            let z1 = p1.z - player.z;
-            let z2 = p2.z - player.z;
-
-            // Skip lines that are both behind the camera
-            if (z1 < nearClip && z2 < nearClip) return null;
-
-            // Calculate the distance from the player to each platform point
-            const dist1 = distance(player, p1);
-            const dist2 = distance(player, p2);
-
-            // Only start clipping if the distance to the point is greater than the threshold
-            if (dist1 < clippingThreshold && dist2 < clippingThreshold) return [p1, p2];
-
-            // If one point is behind, clip the line to the near plane
-            if (z1 >= nearClip && z2 >= nearClip) return [p1, p2];
-
-            let t = (nearClip - z1) / (z2 - z1); // Calculate where it intersects the near clip plane
-            let clippedPoint = {
-                x: p1.x + t * (p2.x - p1.x),
-                y: p1.y + t * (p2.y - p1.y),
-                z: player.z + nearClip
-            };
-
-            return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
-        }
-
-        // Drawing function for platform
+        // Draw the platform with clipping
         function drawPlatform() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            for (let i = 0; i < platform.length; i++) {
-                let p1 = platform[i];
-                let p2 = platform[(i + 1) % platform.length];
+            let projected = platform.map(project);
 
-                let clipped = clipLine(p1, p2);
-                if (!clipped) continue;
+            // Only keep points that are in front of the player
+            projected = projected.filter(p => p.z > player.z);
 
-                let proj1 = project(clipped[0]);
-                let proj2 = project(clipped[1]);
+            if (projected.length < 2) return; // If less than 2 points are visible, do nothing
 
-                if (proj1 && proj2) { // Ensure the points are in the visible area
-                    ctx.beginPath();
-                    ctx.moveTo(proj1.x, proj1.y);
-                    ctx.lineTo(proj2.x, proj2.y);
-                    ctx.strokeStyle = "black";
-                    ctx.lineWidth = 2;
-                    ctx.stroke();
-                }
+            ctx.beginPath();
+            for (let i = 0; i < projected.length; i++) {
+                let next = projected[(i + 1) % projected.length];
+                ctx.moveTo(projected[i].x, projected[i].y);
+                ctx.lineTo(next.x, next.y);
             }
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = 2;
+            ctx.stroke();
         }
 
-        // Game loop for continuous updating
+        // Update function to draw the platform
         function update() {
             drawPlatform();
-            requestAnimationFrame(update);
+            setTimeout(update, 1000);
         }
 
-        // Player movement controls
+        // Keyboard movement controls
         document.addEventListener("keydown", (e) => {
             if (e.key === "ArrowUp") player.z += 2;
             if (e.key === "ArrowDown") player.z -= 2;
             if (e.key === "ArrowLeft") player.x -= 2;
             if (e.key === "ArrowRight") player.x += 2;
+            drawPlatform();
         });
 
-        // Start the game loop
         update();
     </script>
 </body>
