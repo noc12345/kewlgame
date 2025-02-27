@@ -45,7 +45,7 @@
             let relativeZ = point.z - player.z;
             if (relativeZ < nearClip) relativeZ = nearClip;
 
-            let scale = 2500 / (relativeZ + 100);
+            let scale = 2600 / (relativeZ + 100);
             return {
                 x: canvas.width / 2 + (point.x - player.x) * scale,
                 y: canvas.height / 2 - (point.y - player.y) * scale
@@ -92,24 +92,14 @@
                 ctx.lineWidth = 2;
                 ctx.stroke();
             }
-
-            // Project the player's position to 2D and draw the circle
-            const playerPos = project(player);
-            ctx.beginPath();
-            ctx.arc(playerPos.x, playerPos.y, Math.PI * 2); // Moving it slightly down
-            ctx.fillStyle = "red";
-            ctx.fill();
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
-            ctx.stroke();
         }
 
         // Update the player's position based on key presses
         function updatePosition() {
             if (keys.ArrowUp) player.z += speed;
             if (keys.ArrowDown) player.z -= speed;
-            if (keys.ArrowLeft) player.x -= speed/3;
-            if (keys.ArrowRight) player.x += speed/3;
+            if (keys.ArrowLeft) player.x -= 2/speed;
+            if (keys.ArrowRight) player.x += 2/speed;
         }
 
         // Main update loop
