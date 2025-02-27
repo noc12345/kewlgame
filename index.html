@@ -24,6 +24,7 @@
         // Player and camera are at the same position
         let player = { x: 0, y: 5, z: 0 };
         const nearClip = 1; // Clipping plane distance
+        const clippingThreshold = 20; // Distance (in studs) after which clipping starts
 
         const platform = [
             { x: -20, y: 0, z: -20 },
@@ -31,6 +32,11 @@
             { x: 20, y: 0, z: 20 },
             { x: -20, y: 0, z: 20 }
         ];
+
+        // Calculate the distance from the player to a point
+        function distance(p1, p2) {
+            return Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2 + (p1.z - p2.z) ** 2);
+        }
 
         // Perspective projection function
         function project(point) {
@@ -45,13 +51,20 @@
             };
         }
 
-        // Line clipping function
+        // Line clipping function with delayed start
         function clipLine(p1, p2) {
             let z1 = p1.z - player.z;
             let z2 = p2.z - player.z;
 
             // Skip lines that are both behind the camera
             if (z1 < nearClip && z2 < nearClip) return null;
+
+            // Calculate the distance from the player to each platform point
+            const dist1 = distance(player, p1);
+            const dist2 = distance(player, p2);
+
+            // Only start clipping if the distance to the point is greater than the threshold
+            if (dist1 < clippingThreshold && dist2 < clippingThreshold) return [p1, p2];
 
             // If one point is behind, clip the line to the near plane
             if (z1 >= nearClip && z2 >= nearClip) return [p1, p2];
