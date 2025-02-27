@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Circle in 2D Canvas</title>
+  <title>3D Movement Example</title>
   <style>
     body { text-align: center; font-family: Arial, sans-serif; }
     canvas { background: lightgray; margin-top: 10px; display: block; margin: auto; }
   </style>
 </head>
 <body>
-  <h1>3D Circle in 2D Canvas</h1>
+  <h1>3D Movement with Smooth & Diagonal Movement</h1>
   <canvas id="canvas"></canvas>
   <p>Use arrow keys to move</p>
 
@@ -21,18 +21,10 @@
     canvas.width = 500;
     canvas.height = 500;
 
-    let player = { x: 0, y: 5, z: -30 }; // Player's position
+    let player = { x: 0, y: 10, z: -30 }; // Player's position
     const nearClip = 0.1;
     const movementSpeed = 0.5; // Movement speed for smooth movement
     const diagonalFactor = Math.sqrt(0.5); // To handle diagonal speed normalization
-
-    // Define the circle
-    const circle = {
-      x: 10,  // x position of the circle in 3D space
-      y: 0,   // y position of the circle
-      z: 20,  // z position of the circle (how far it is from the player)
-      radius: 5  // radius of the circle in 3D space
-    };
 
     // Key states to track which keys are pressed
     const keys = {
@@ -47,38 +39,11 @@
       let relativeZ = point.z - player.z;
       if (relativeZ < nearClip) relativeZ = nearClip; // Clamp to avoid division errors
 
-      let scale = 200 / (relativeZ + 100);
+      let scale = 2600 / (relativeZ + 100);
       return {
         x: canvas.width / 2 + (point.x - player.x) * scale,
         y: canvas.height / 2 - (point.y - player.y) * scale
       };
-    }
-
-    // Draws a 3D circle onto the canvas
-    function drawCircle() {
-      const segments = 30;  // Number of points to approximate the circle
-      const angleStep = (2 * Math.PI) / segments;  // Angle between each point
-
-      // Draw the circle in 3D space, then project the points
-      ctx.beginPath();
-      for (let i = 0; i < segments; i++) {
-        let angle = i * angleStep;
-        let x = circle.x + circle.radius * Math.cos(angle);
-        let y = circle.y + circle.radius * Math.sin(angle);
-        let z = circle.z;
-
-        // Project the 3D point to 2D
-        let proj = project({ x, y, z });
-        if (i === 0) {
-          ctx.moveTo(proj.x, proj.y);
-        } else {
-          ctx.lineTo(proj.x, proj.y);
-        }
-      }
-      ctx.closePath();
-      ctx.strokeStyle = "black";
-      ctx.lineWidth = 2;
-      ctx.stroke();
     }
 
     // Update the player's position based on key presses
@@ -101,10 +66,10 @@
       player.z += moveZ;
     }
 
-    // Draw everything
+    // Draw everything (you can add additional objects if needed)
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas
-      drawCircle();  // Draw the circle
+      // You can draw the player position here if needed, or any other elements
     }
 
     // Update the scene and handle movement
