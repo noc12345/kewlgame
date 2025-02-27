@@ -21,7 +21,7 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        let player = { x: 0, y: 5, z: -30 }; // Player's position
+        let player = { x: 0, y: 10, z: -30 }; // Player's position
         const nearClip = 0.1; // Near clipping plane
         const speed = 1; // Movement speed factor
 
@@ -45,7 +45,7 @@
             let relativeZ = point.z - player.z;
             if (relativeZ < nearClip) relativeZ = nearClip;
 
-            let scale = 200 / (relativeZ + 100);
+            let scale = 2600 / (relativeZ + 100);
             return {
                 x: canvas.width / 2 + (point.x - player.x) * scale,
                 y: canvas.height / 2 - (point.y - player.y) * scale
