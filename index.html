@@ -36,7 +36,7 @@
       let relativeZ = point.z - player.z;
       if (relativeZ < nearClip) relativeZ = nearClip; // Clamp to avoid division errors
 
-      let scale = 1750 / (relativeZ + 100);
+      let scale = 2600 / (relativeZ + 100);
       return {
         x: canvas.width / 2 + (point.x - player.x) * scale,
         y: canvas.height / 2 - (point.y - player.y) * scale
