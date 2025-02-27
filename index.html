@@ -31,7 +31,10 @@
         ];
 
         function project(point) {
-            let scale = 200 / (point.z - player.z + 100);
+            let relativeZ = point.z - player.z;
+            if (relativeZ <= 0) return null; // Ignore points behind the camera
+            
+            let scale = 200 / (relativeZ + 100);
             return {
                 x: canvas.width / 2 + (point.x - player.x) * scale,
                 y: canvas.height / 2 - (point.y - player.y) * scale
@@ -45,9 +48,13 @@
 
             ctx.beginPath();
             for (let i = 0; i < projected.length; i++) {
+                let current = projected[i];
                 let next = projected[(i + 1) % projected.length];
-                ctx.moveTo(projected[i].x, projected[i].y);
-                ctx.lineTo(next.x, next.y);
+
+                if (current && next) { // Only draw if both points are visible
+                    ctx.moveTo(current.x, current.y);
+                    ctx.lineTo(next.x, next.y);
+                }
             }
             ctx.strokeStyle = "black";
             ctx.lineWidth = 2;
