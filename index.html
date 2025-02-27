@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>3D Perspective Platform</title>
+  <title>3D Circle in 2D Canvas</title>
   <style>
     body { text-align: center; font-family: Arial, sans-serif; }
     canvas { background: lightgray; margin-top: 10px; display: block; margin: auto; }
   </style>
 </head>
 <body>
-  <h1>3D Perspective Platform</h1>
+  <h1>3D Circle in 2D Canvas</h1>
   <canvas id="canvas"></canvas>
   <p>Use arrow keys to move</p>
 
@@ -21,82 +21,115 @@
     canvas.width = 500;
     canvas.height = 500;
 
-    let player = { x: 0, y: 10, z: -30 }; // Player's position
-    const nearClip = 0.1; // Lowered clipping plane for smoother behavior
+    let player = { x: 0, y: 5, z: -30 }; // Player's position
+    const nearClip = 0.1;
+    const movementSpeed = 0.5; // Movement speed for smooth movement
+    const diagonalFactor = Math.sqrt(0.5); // To handle diagonal speed normalization
 
-    const platform = [
-      { x: -20, y: 0, z: -20 },
-      { x: 20, y: 0, z: -20 },
-      { x: 20, y: 0, z: 20 },
-      { x: -20, y: 0, z: 20 }
-    ];
+    // Define the circle
+    const circle = {
+      x: 10,  // x position of the circle in 3D space
+      y: 0,   // y position of the circle
+      z: 20,  // z position of the circle (how far it is from the player)
+      radius: 5  // radius of the circle in 3D space
+    };
+
+    // Key states to track which keys are pressed
+    const keys = {
+      up: false,
+      down: false,
+      left: false,
+      right: false
+    };
 
     // Projects a 3D point to 2D canvas coordinates.
     function project(point) {
       let relativeZ = point.z - player.z;
       if (relativeZ < nearClip) relativeZ = nearClip; // Clamp to avoid division errors
 
-      let scale = 2600 / (relativeZ + 100);
+      let scale = 200 / (relativeZ + 100);
       return {
         x: canvas.width / 2 + (point.x - player.x) * scale,
         y: canvas.height / 2 - (point.y - player.y) * scale
       };
     }
 
-    // Clips a line between p1 and p2 against the near clipping plane.
-    function clipLine(p1, p2) {
-      let z1 = p1.z - player.z;
-      let z2 = p2.z - player.z;
+    // Draws a 3D circle onto the canvas
+    function drawCircle() {
+      const segments = 30;  // Number of points to approximate the circle
+      const angleStep = (2 * Math.PI) / segments;  // Angle between each point
 
-      if (z1 >= nearClip && z2 >= nearClip) return [p1, p2]; // Both visible
-      if (z1 < nearClip && z2 < nearClip) return null;         // Both behind, ignore
+      // Draw the circle in 3D space, then project the points
+      ctx.beginPath();
+      for (let i = 0; i < segments; i++) {
+        let angle = i * angleStep;
+        let x = circle.x + circle.radius * Math.cos(angle);
+        let y = circle.y + circle.radius * Math.sin(angle);
+        let z = circle.z;
 
-      // Compute interpolation factor t where the line intersects the near clipping plane.
-      let t = (nearClip - z1) / (z2 - z1);
-      let clippedPoint = {
-        x: p1.x + t * (p2.x - p1.x),
-        y: p1.y + t * (p2.y - p1.y),
-        z: player.z + nearClip
-      };
-
-      return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
-    }
-
-    function drawPlatform() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      for (let i = 0; i < platform.length; i++) {
-        let p1 = platform[i];
-        let p2 = platform[(i + 1) % platform.length];
-
-        let clipped = clipLine(p1, p2);
-        if (!clipped) continue;
-
-        let proj1 = project(clipped[0]);
-        let proj2 = project(clipped[1]);
-
-        ctx.beginPath();
-        ctx.moveTo(proj1.x, proj1.y);
-        ctx.lineTo(proj2.x, proj2.y);
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 2;
-        ctx.stroke();
+        // Project the 3D point to 2D
+        let proj = project({ x, y, z });
+        if (i === 0) {
+          ctx.moveTo(proj.x, proj.y);
+        } else {
+          ctx.lineTo(proj.x, proj.y);
+        }
       }
+      ctx.closePath();
+      ctx.strokeStyle = "black";
+      ctx.lineWidth = 2;
+      ctx.stroke();
     }
 
+    // Update the player's position based on key presses
+    function updatePlayerPosition() {
+      let moveX = 0;
+      let moveZ = 0;
+
+      if (keys.up) moveZ -= movementSpeed;
+      if (keys.down) moveZ += movementSpeed;
+      if (keys.left) moveX -= movementSpeed;
+      if (keys.right) moveX += movementSpeed;
+
+      // Normalize diagonal movement (if moving diagonally, maintain equal speed)
+      if ((keys.up || keys.down) && (keys.left || keys.right)) {
+        moveX *= diagonalFactor;
+        moveZ *= diagonalFactor;
+      }
+
+      player.x += moveX;
+      player.z += moveZ;
+    }
+
+    // Draw everything
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);  // Clear the canvas
+      drawCircle();  // Draw the circle
+    }
+
+    // Update the scene and handle movement
     function update() {
-      drawPlatform();
-      requestAnimationFrame(update);
+      updatePlayerPosition(); // Update player's position smoothly
+      draw();  // Redraw everything
+      requestAnimationFrame(update); // Repeat the update on the next frame
     }
 
+    // Listen for key events to track which keys are pressed
     document.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowUp") player.z += 2;
-      if (e.key === "ArrowDown") player.z -= 2;
-      if (e.key === "ArrowLeft") player.x -= 2;
-      if (e.key === "ArrowRight") player.x += 2;
+      if (e.key === "ArrowUp") keys.up = true;
+      if (e.key === "ArrowDown") keys.down = true;
+      if (e.key === "ArrowLeft") keys.left = true;
+      if (e.key === "ArrowRight") keys.right = true;
     });
 
-    update();
+    document.addEventListener("keyup", (e) => {
+      if (e.key === "ArrowUp") keys.up = false;
+      if (e.key === "ArrowDown") keys.down = false;
+      if (e.key === "ArrowLeft") keys.left = false;
+      if (e.key === "ArrowRight") keys.right = false;
+    });
+
+    update(); // Start the game loop
   </script>
 </body>
 </html>
