@@ -21,12 +21,8 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        // Player's position
+        // Player and camera are at the same position
         let player = { x: 0, y: 5, z: 0 };
-        
-        // Camera position (behind the player to give perspective)
-        let camera = { x: 0, y: 5, z: -50 };
-
         const nearClip = 1; // Clipping plane distance
 
         const platform = [
@@ -36,21 +32,23 @@
             { x: -20, y: 0, z: 20 }
         ];
 
+        // Perspective projection function
         function project(point) {
-            let relativeZ = point.z - camera.z;
-            if (relativeZ <= 0) return null; // Skip points behind camera
+            let relativeZ = point.z - player.z;
+            if (relativeZ <= 0) return null; // Skip points behind the camera
             
             // Perspective scaling
             let scale = 200 / (relativeZ + 100);
             return {
-                x: canvas.width / 2 + (point.x - camera.x) * scale,
-                y: canvas.height / 2 - (point.y - camera.y) * scale
+                x: canvas.width / 2 + (point.x - player.x) * scale,
+                y: canvas.height / 2 - (point.y - player.y) * scale
             };
         }
 
+        // Line clipping function
         function clipLine(p1, p2) {
-            let z1 = p1.z - camera.z;
-            let z2 = p2.z - camera.z;
+            let z1 = p1.z - player.z;
+            let z2 = p2.z - player.z;
 
             // Skip lines that are both behind the camera
             if (z1 < nearClip && z2 < nearClip) return null;
@@ -62,12 +60,13 @@
             let clippedPoint = {
                 x: p1.x + t * (p2.x - p1.x),
                 y: p1.y + t * (p2.y - p1.y),
-                z: camera.z + nearClip
+                z: player.z + nearClip
             };
 
             return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
         }
 
+        // Drawing function for platform
         function drawPlatform() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -92,19 +91,21 @@
             }
         }
 
+        // Game loop for continuous updating
         function update() {
             drawPlatform();
             requestAnimationFrame(update);
         }
 
+        // Player movement controls
         document.addEventListener("keydown", (e) => {
-            // Move player around (not camera)
             if (e.key === "ArrowUp") player.z += 2;
             if (e.key === "ArrowDown") player.z -= 2;
             if (e.key === "ArrowLeft") player.x -= 2;
             if (e.key === "ArrowRight") player.x += 2;
         });
 
+        // Start the game loop
         update();
     </script>
 </body>
