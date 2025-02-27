@@ -21,7 +21,7 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        let player = { x: 0, y: 10, z: -30 }; // Player's position
+        let player = { x: 0, y: 10, z: 0 }; // Player's position
         const nearClip = 0.1; // Near clipping plane
         const speed = 1; // Movement speed factor
 
@@ -95,10 +95,10 @@
 
             // Draw a small circle in the middle of the screen
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2 + 250, 10, 0, Math.PI * 2);
+            ctx.arc(canvas.width / 2, canvas.height / 2 + 190, 10, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = "black";
-            ctx.lineWidth = 2;
+            ctx.lineWidth = 0.5;
             ctx.stroke();
         }
 
