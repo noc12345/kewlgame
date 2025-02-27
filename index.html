@@ -21,7 +21,12 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        let player = { x: 0, y: 5, z: -100 }; // Player's position
+        // Player's position
+        let player = { x: 0, y: 5, z: 0 };
+        
+        // Camera position (behind the player to give perspective)
+        let camera = { x: 0, y: 5, z: -50 };
+
         const nearClip = 1; // Clipping plane distance
 
         const platform = [
@@ -32,20 +37,20 @@
         ];
 
         function project(point) {
-            let relativeZ = point.z - player.z;
+            let relativeZ = point.z - camera.z;
             if (relativeZ <= 0) return null; // Skip points behind camera
             
             // Perspective scaling
             let scale = 200 / (relativeZ + 100);
             return {
-                x: canvas.width / 2 + (point.x - player.x) * scale,
-                y: canvas.height / 2 - (point.y - player.y) * scale
+                x: canvas.width / 2 + (point.x - camera.x) * scale,
+                y: canvas.height / 2 - (point.y - camera.y) * scale
             };
         }
 
         function clipLine(p1, p2) {
-            let z1 = p1.z - player.z;
-            let z2 = p2.z - player.z;
+            let z1 = p1.z - camera.z;
+            let z2 = p2.z - camera.z;
 
             // Skip lines that are both behind the camera
             if (z1 < nearClip && z2 < nearClip) return null;
@@ -57,7 +62,7 @@
             let clippedPoint = {
                 x: p1.x + t * (p2.x - p1.x),
                 y: p1.y + t * (p2.y - p1.y),
-                z: player.z + nearClip
+                z: camera.z + nearClip
             };
 
             return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
@@ -93,6 +98,7 @@
         }
 
         document.addEventListener("keydown", (e) => {
+            // Move player around (not camera)
             if (e.key === "ArrowUp") player.z += 2;
             if (e.key === "ArrowDown") player.z -= 2;
             if (e.key === "ArrowLeft") player.x -= 2;
