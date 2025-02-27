@@ -45,7 +45,7 @@
             let relativeZ = point.z - player.z;
             if (relativeZ < nearClip) relativeZ = nearClip;
 
-            let scale = 2600 / (relativeZ + 100);
+            let scale = 2400 / (relativeZ + 100);
             return {
                 x: canvas.width / 2 + (point.x - player.x) * scale,
                 y: canvas.height / 2 - (point.y - player.y) * scale
@@ -95,7 +95,7 @@
 
             // Draw a small circle in the middle of the screen
             ctx.beginPath();
-            ctx.arc(canvas.width / 2, canvas.height / 2 + 190, 10, 0, Math.PI * 2);
+            ctx.arc(canvas.width / 2, canvas.height / 2 + 200, 10, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = "black";
             ctx.lineWidth = 0.5;
