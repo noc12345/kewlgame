@@ -21,12 +21,11 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        let player = { x: 0, y: 10, z: -30, rotY: 0 }; // Player position & rotation
-        const nearClip = 0.1; // Near clipping plane
-        const speed = 1; // Movement speed factor
-        const rotateSpeed = 0.05; // Camera rotation speed
+        let player = { x: 0, y: 10, z: -30, rotY: 0 }; // Position & rotation
+        const nearClip = 0.1;
+        const speed = 1;
+        const rotateSpeed = 0.05;
 
-        // List of surfaces (platforms, walls, etc.)
         const surfaces = [
             {
                 name: "Main Platform",
@@ -39,14 +38,11 @@
             }
         ];
 
-        // Keep track of pressed keys
         const keys = {};
 
-        // Project a 3D point onto 2D canvas coordinates with rotation
         function project(point) {
             let dx = point.x - player.x;
             let dz = point.z - player.z;
-
             let rotatedX = dx * Math.cos(player.rotY) - dz * Math.sin(player.rotY);
             let rotatedZ = dx * Math.sin(player.rotY) + dz * Math.cos(player.rotY);
 
@@ -59,7 +55,6 @@
             };
         }
 
-        // Clip a line against the near clipping plane
         function clipLine(p1, p2) {
             let z1 = (p1.x - player.x) * Math.sin(player.rotY) + (p1.z - player.z) * Math.cos(player.rotY);
             let z2 = (p2.x - player.x) * Math.sin(player.rotY) + (p2.z - player.z) * Math.cos(player.rotY);
@@ -77,7 +72,6 @@
             return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
         }
 
-        // Draw all surfaces
         function drawSurfaces() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -102,30 +96,44 @@
             }
         }
 
-        // Update the player's position and rotation based on key presses
         function updatePosition() {
-            if (keys["ArrowUp"]) player.z += speed;
-            if (keys["ArrowDown"]) player.z -= speed;
-            if (keys["ArrowLeft"]) player.x -= speed / 3;
-            if (keys["ArrowRight"]) player.x += speed / 3;
-            if (keys[" "]) player.y += speed; // Space to go up
-            if (keys["Shift"]) player.y -= speed; // Shift to go down
-            if (keys["a"]) player.rotY -= rotateSpeed; // Rotate left
-            if (keys["d"]) player.rotY += rotateSpeed; // Rotate right
+            let forwardX = Math.sin(player.rotY) * speed;
+            let forwardZ = Math.cos(player.rotY) * speed;
+            let rightX = Math.cos(player.rotY) * speed;
+            let rightZ = -Math.sin(player.rotY) * speed;
+
+            if (keys["ArrowUp"]) {
+                player.x += forwardX;
+                player.z += forwardZ;
+            }
+            if (keys["ArrowDown"]) {
+                player.x -= forwardX;
+                player.z -= forwardZ;
+            }
+            if (keys["ArrowLeft"]) {
+                player.x -= rightX;
+                player.z -= rightZ;
+            }
+            if (keys["ArrowRight"]) {
+                player.x += rightX;
+                player.z += rightZ;
+            }
+            if (keys[" "]) player.y += speed;
+            if (keys["Shift"]) player.y -= speed;
+            if (keys["a"]) player.rotY -= rotateSpeed;
+            if (keys["d"]) player.rotY += rotateSpeed;
         }
 
-        // Main update loop
         function update() {
             updatePosition();
             drawSurfaces();
             requestAnimationFrame(update);
         }
 
-        // Track key events
         document.addEventListener("keydown", (e) => { keys[e.key] = true; });
         document.addEventListener("keyup", (e) => { keys[e.key] = false; });
 
-        update(); // Start the update loop
+        update();
     </script>
 </body>
 </html>
