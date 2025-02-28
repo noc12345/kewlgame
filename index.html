@@ -25,11 +25,26 @@
         const nearClip = 0.1; // Near clipping plane
         const speed = 1; // Movement speed factor
 
-        const platform = [
-            { x: -20, y: 0, z: -20 },
-            { x: 20, y: 0, z: -20 },
-            { x: 20, y: 0, z: 20 },
-            { x: -20, y: 0, z: 20 }
+        // List of surfaces (platforms, walls, etc.)
+        const surfaces = [
+            {
+                name: "Main Platform",
+                corners: [
+                    { x: -20, y: 0, z: -20 },
+                    { x: 20, y: 0, z: -20 },
+                    { x: 20, y: 0, z: 20 },
+                    { x: -20, y: 0, z: 20 }
+                ]
+            },
+            {
+                name: "Wall",
+                corners: [
+                    { x: -10, y: 0, z: -10 },
+                    { x: -5, y: 15, z: -10 },
+                    { x: -5, y: 15, z: -5 },
+                    { x: -10, y: 0, z: -5 }
+                ]
+            }
         ];
 
         // Keep track of pressed keys
@@ -70,27 +85,28 @@
             return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
         }
 
-        // Draw the platform
-        function drawPlatform() {
+        // Draw all surfaces
+        function drawSurfaces() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Draw the platform
-            for (let i = 0; i < platform.length; i++) {
-                let p1 = platform[i];
-                let p2 = platform[(i + 1) % platform.length];
+            for (let surface of surfaces) {
+                for (let i = 0; i < surface.corners.length; i++) {
+                    let p1 = surface.corners[i];
+                    let p2 = surface.corners[(i + 1) % surface.corners.length];
 
-                let clipped = clipLine(p1, p2);
-                if (!clipped) continue;
+                    let clipped = clipLine(p1, p2);
+                    if (!clipped) continue;
 
-                let proj1 = project(clipped[0]);
-                let proj2 = project(clipped[1]);
+                    let proj1 = project(clipped[0]);
+                    let proj2 = project(clipped[1]);
 
-                ctx.beginPath();
-                ctx.moveTo(proj1.x, proj1.y);
-                ctx.lineTo(proj2.x, proj2.y);
-                ctx.strokeStyle = "black";
-                ctx.lineWidth = 2;
-                ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(proj1.x, proj1.y);
+                    ctx.lineTo(proj2.x, proj2.y);
+                    ctx.strokeStyle = "black";
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
             }
         }
 
@@ -98,14 +114,14 @@
         function updatePosition() {
             if (keys.ArrowUp) player.z += speed;
             if (keys.ArrowDown) player.z -= speed;
-            if (keys.ArrowLeft) player.x -= speed/3;
-            if (keys.ArrowRight) player.x += speed/3;
+            if (keys.ArrowLeft) player.x -= speed / 3;
+            if (keys.ArrowRight) player.x += speed / 3;
         }
 
         // Main update loop
         function update() {
             updatePosition();
-            drawPlatform();
+            drawSurfaces();
             requestAnimationFrame(update);
         }
 
