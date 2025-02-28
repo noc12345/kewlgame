@@ -21,10 +21,11 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        let player = { x: 0, y: 10, z: -30, rotY: 0 }; // Position & rotation
+        let player = { x: 0, y: 10, z: -30, rotY: 0, rotX: 0 }; // Position & rotation (rotX for up/down)
         const nearClip = 0.1;
         const speed = 1;
-        const rotateSpeed = 0.05;
+        const rotateSpeed = 0.02;
+        const verticalRotateSpeed = 0.05;
 
         const surfaces = [
             {
@@ -46,9 +47,9 @@
             let rotatedX = dx * Math.cos(player.rotY) - dz * Math.sin(player.rotY);
             let rotatedZ = dx * Math.sin(player.rotY) + dz * Math.cos(player.rotY);
 
-            if (rotatedZ < nearClip) rotatedZ = nearClip;
+            let verticalOffset = Math.sin(player.rotX) * rotatedZ;
+            let scale = 2600 / (rotatedZ + 100 + verticalOffset);
 
-            let scale = 2600 / (rotatedZ + 100);
             return {
                 x: canvas.width / 2 + rotatedX * scale,
                 y: canvas.height / 2 - (point.y - player.y) * scale
@@ -122,6 +123,8 @@
             if (keys["Shift"]) player.y -= speed;
             if (keys["a"]) player.rotY -= rotateSpeed;
             if (keys["d"]) player.rotY += rotateSpeed;
+            if (keys["w"]) player.rotX -= verticalRotateSpeed;
+            if (keys["s"]) player.rotX += verticalRotateSpeed;
         }
 
         function update() {
