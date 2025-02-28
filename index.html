@@ -12,7 +12,7 @@
 <body>
     <h1>3D Perspective Platform</h1>
     <canvas id="canvas"></canvas>
-    <p>Use arrow keys to move</p>
+    <p>Use arrow keys to move, W/A/S/D to rotate, Shift to go down, Space to go up</p>
 
     <script>
         const canvas = document.getElementById("canvas");
@@ -21,9 +21,10 @@
         canvas.width = 500;
         canvas.height = 500;
 
-        let player = { x: 0, y: 10, z: -30 }; // Player's position
+        let player = { x: 0, y: 10, z: -30, rotY: 0 }; // Player position & rotation
         const nearClip = 0.1; // Near clipping plane
         const speed = 1; // Movement speed factor
+        const rotateSpeed = 0.05; // Camera rotation speed
 
         // List of surfaces (platforms, walls, etc.)
         const surfaces = [
@@ -35,42 +36,33 @@
                     { x: 20, y: 0, z: 20 },
                     { x: -20, y: 0, z: 20 }
                 ]
-            },
-            {
-                name: "Wall",
-                corners: [
-                    { x: -20, y: 0, z: -20 },
-                    { x: 20, y: 15, z: -20 },
-                    { x: -20, y: 15, z: -20 },
-                    { x: 20, y: 0, z: -20 }
-                ]
             }
         ];
 
         // Keep track of pressed keys
-        const keys = {
-            ArrowUp: false,
-            ArrowDown: false,
-            ArrowLeft: false,
-            ArrowRight: false
-        };
+        const keys = {};
 
-        // Project a 3D point onto 2D canvas coordinates
+        // Project a 3D point onto 2D canvas coordinates with rotation
         function project(point) {
-            let relativeZ = point.z - player.z;
-            if (relativeZ < nearClip) relativeZ = nearClip;
+            let dx = point.x - player.x;
+            let dz = point.z - player.z;
 
-            let scale = 2600 / (relativeZ + 100);
+            let rotatedX = dx * Math.cos(player.rotY) - dz * Math.sin(player.rotY);
+            let rotatedZ = dx * Math.sin(player.rotY) + dz * Math.cos(player.rotY);
+
+            if (rotatedZ < nearClip) rotatedZ = nearClip;
+
+            let scale = 2600 / (rotatedZ + 100);
             return {
-                x: canvas.width / 2 + (point.x - player.x) * scale,
+                x: canvas.width / 2 + rotatedX * scale,
                 y: canvas.height / 2 - (point.y - player.y) * scale
             };
         }
 
         // Clip a line against the near clipping plane
         function clipLine(p1, p2) {
-            let z1 = p1.z - player.z;
-            let z2 = p2.z - player.z;
+            let z1 = (p1.x - player.x) * Math.sin(player.rotY) + (p1.z - player.z) * Math.cos(player.rotY);
+            let z2 = (p2.x - player.x) * Math.sin(player.rotY) + (p2.z - player.z) * Math.cos(player.rotY);
 
             if (z1 >= nearClip && z2 >= nearClip) return [p1, p2];
             if (z1 < nearClip && z2 < nearClip) return null;
@@ -79,7 +71,7 @@
             let clippedPoint = {
                 x: p1.x + t * (p2.x - p1.x),
                 y: p1.y + t * (p2.y - p1.y),
-                z: player.z + nearClip
+                z: p1.z + t * (p2.z - p1.z)
             };
 
             return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
@@ -110,12 +102,16 @@
             }
         }
 
-        // Update the player's position based on key presses
+        // Update the player's position and rotation based on key presses
         function updatePosition() {
-            if (keys.ArrowUp) player.z += speed;
-            if (keys.ArrowDown) player.z -= speed;
-            if (keys.ArrowLeft) player.x -= speed / 3;
-            if (keys.ArrowRight) player.x += speed / 3;
+            if (keys["ArrowUp"]) player.z += speed;
+            if (keys["ArrowDown"]) player.z -= speed;
+            if (keys["ArrowLeft"]) player.x -= speed / 3;
+            if (keys["ArrowRight"]) player.x += speed / 3;
+            if (keys[" "]) player.y += speed; // Space to go up
+            if (keys["Shift"]) player.y -= speed; // Shift to go down
+            if (keys["a"]) player.rotY -= rotateSpeed; // Rotate left
+            if (keys["d"]) player.rotY += rotateSpeed; // Rotate right
         }
 
         // Main update loop
@@ -126,17 +122,8 @@
         }
 
         // Track key events
-        document.addEventListener("keydown", (e) => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = true;
-            }
-        });
-
-        document.addEventListener("keyup", (e) => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = false;
-            }
-        });
+        document.addEventListener("keydown", (e) => { keys[e.key] = true; });
+        document.addEventListener("keyup", (e) => { keys[e.key] = false; });
 
         update(); // Start the update loop
     </script>
