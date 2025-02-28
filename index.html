@@ -22,11 +22,10 @@
         canvas.height = 500;
 
         let player = { x: 0, y: 10, z: -30 }; // Player's position
-        const nearClip = 0.1; // Near clipping plane (Z)
-        const nearClipX = 1; // Near clipping plane (X)
+        const nearClip = 0.1; // Near clipping plane
         const speed = 1; // Movement speed factor
 
-        // List of surfaces
+        // List of surfaces (platforms, walls, etc.)
         const surfaces = [
             {
                 name: "Main Platform",
@@ -40,16 +39,21 @@
             {
                 name: "Wall",
                 corners: [
-                    { x: -10, y: 0, z: -10 },
-                    { x: -5, y: 15, z: -10 },
-                    { x: -5, y: 15, z: -5 },
-                    { x: -10, y: 0, z: -5 }
+                    { x: -20, y: 0, z: -20 },
+                    { x: 20, y: 0, z: -20 },
+                    { x: -20, y: 15, z: -20 },
+                    { x: 20, y: 15, z: -20 }
                 ]
             }
         ];
 
         // Keep track of pressed keys
-        const keys = { ArrowUp: false, ArrowDown: false, ArrowLeft: false, ArrowRight: false };
+        const keys = {
+            ArrowUp: false,
+            ArrowDown: false,
+            ArrowLeft: false,
+            ArrowRight: false
+        };
 
         // Project a 3D point onto 2D canvas coordinates
         function project(point) {
@@ -63,31 +67,22 @@
             };
         }
 
-        // Clip a line against the near clipping planes (Z and X)
+        // Clip a line against the near clipping plane
         function clipLine(p1, p2) {
             let z1 = p1.z - player.z;
             let z2 = p2.z - player.z;
-            let x1 = p1.x - player.x;
-            let x2 = p2.x - player.x;
 
-            // If both points are behind the near Z plane, discard the line
+            if (z1 >= nearClip && z2 >= nearClip) return [p1, p2];
             if (z1 < nearClip && z2 < nearClip) return null;
 
-            // Clip against the Z plane
-            if (z1 < nearClip || z2 < nearClip) {
-                let t = (nearClip - z1) / (z2 - z1);
-                let clippedPoint = {
-                    x: p1.x + t * (p2.x - p1.x),
-                    y: p1.y + t * (p2.y - p1.y),
-                    z: player.z + nearClip
-                };
-                return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
-            }
+            let t = (nearClip - z1) / (z2 - z1);
+            let clippedPoint = {
+                x: p1.x + t * (p2.x - p1.x),
+                y: p1.y + t * (p2.y - p1.y),
+                z: player.z + nearClip
+            };
 
-            // Clip against the X plane (left/right bounds)
-            if (Math.abs(x1) > nearClipX && Math.abs(x2) > nearClipX) return null;
-
-            return [p1, p2]; // No clipping needed
+            return z1 < nearClip ? [clippedPoint, p2] : [p1, clippedPoint];
         }
 
         // Draw all surfaces
@@ -132,11 +127,15 @@
 
         // Track key events
         document.addEventListener("keydown", (e) => {
-            if (keys.hasOwnProperty(e.key)) keys[e.key] = true;
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = true;
+            }
         });
 
         document.addEventListener("keyup", (e) => {
-            if (keys.hasOwnProperty(e.key)) keys[e.key] = false;
+            if (keys.hasOwnProperty(e.key)) {
+                keys[e.key] = false;
+            }
         });
 
         update(); // Start the update loop
